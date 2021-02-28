@@ -34,7 +34,7 @@ For ex:
 ```
    2. Instead of directly consuming the records from the producer, consumer will now be reading from the queue. Consumer constantly polls the Queue service for records. 
    3. Implement a simple record consumption strategy by either partitioning the queue and allocating the consumers such that each consumer gets to read from a certain buffered channel or from a particular index in array of buffered channels.
-   4. Implement a Consumer Assignment strategy in a round-robin fashion. 
+   4. Implement a Consumer Assignment strategy in a round-robin fashion. Restrict the queue partitioning to 3. 
         
         If we parition Queue into 3 parts, the consumer assignment is a follows
               
@@ -42,21 +42,6 @@ For ex:
             | Q-2 |  -> consumer-2
             | Q-3 |  -> consumer-3
 
-        If we parition Queue into 4 parts, the consumer assignment is a follows
 
-            | Q-1 |  -> consumer-1
-            | Q-2 |  -> consumer-2
-            | Q-3 |  -> consumer-3
-            | Q-4 |  -> consumer-1
-
-        If we parition Queue into 6 parts, the consumer assignment is a follows
-
-            | Q-1 |  -> consumer-1
-            | Q-2 |  -> consumer-2
-            | Q-3 |  -> consumer-3
-            | Q-4 |  -> consumer-1
-            | Q-5 |  -> consumer-2
-            | Q-6 |  -> consumer-3
-
-  5.  Implement a locking strategy during a record consumption on the queue to avoid multiple consumers reading from the same queue/channel/partition.
+  5.  Implement a locking strategy during a record consumption on the queue to avoid multiple consumers reading from the same queue/channel/partition. Lock the Queue paritition when a consumer is ready to poll the record and release once done.
   6.  Send an acknowlegement back to Queue service once the record is successfully consumed and written to the database.
