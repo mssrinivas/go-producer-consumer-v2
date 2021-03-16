@@ -20,7 +20,7 @@ func main() {
 	port := GetValueFromEnvVariable("ENV_PORT", ":8085")
 	consumer := GetValueFromEnvVariable("QUEUE_URL", "http://localhost:8085")
 	queueservice := svc.QueueService{
-		StopChan: make(chan bool)
+		StopChan: make(chan bool),
 	}
 	queueservice.Initialize()
 	HttpKeepAlive(port)
