@@ -10,15 +10,15 @@ import (
 )
 
 type RequestHandler struct {
-  Queue     TaskQueue 
+	Queue  TaskQueue
 	logger *log.Logger
 }
 
 func NewRequestHandler() Collector {
-  taskQueue := NewTaskQueue()
+	taskQueue := NewTaskQueue()
 	return RequestHandler{
-    Queue: taskQueue,
-  }
+		Queue: taskQueue,
+	}
 }
 
 // Function to capture the task-requests into circular queue
@@ -36,22 +36,21 @@ func (r *RequestHandler) AddTask(_ http.ResponseWriter, _ *http.Request) {
 		return
 	}
 
-	q.Queue.Enqueue(task)
-  MutexMap[task.taskName].lock()
+	r.Queue.Enqueue(task)
 	return
-
 }
 
 // Function called when a task is consumed by the consumer
 func (r *RequestHandler) ConsumeTask(_ http.ResponseWriter, _ *http.Request) http.Response {
-  task := r.Queue.Dequeue()
+	// Add code
+	task := r.Queue.Dequeue()
 	// return a HTTP response with the task marshalled in the body
 }
 
-
 // Function to check for available tasks in circular queue
 func (r *RequestHandler) CheckQueueStatus(_ http.ResponseWriter, _ *http.Request) {
-	// Check if rear != front to conclude that a task exists in queue
+	// Add code
+	// Check if a task exists in the queue
 	return
 
 }
@@ -59,19 +58,18 @@ func (r *RequestHandler) CheckQueueStatus(_ http.ResponseWriter, _ *http.Request
 // Function to capture the task-consumption acknowledgments
 func (r *RequestHandler) CheckAckStatus(_ http.ResponseWriter, req *http.Request) {
 	// If requestBody contains Ack true then remove from Queue
-  reqBody := extractRequestBody(req)
-  err := json.Unmarshal(requestBody, &ConsumerResponse)
+	reqBody := extractRequestBody(req)
+	err := json.Unmarshal(requestBody, &ConsumerResponse)
 	if err != nil {
 		//log error
 		return
 	}
-  // Release the lock only after a successful status
-  if ConsumerResponse.Status {
-    MutexMap[task.taskName].unlock(task.taskName)
-  }
+	// Release the lock only after a successful status
+	if ConsumerResponse.Status {
+		r.Queue.MutexMap[task.taskName].UnLock()
+	}
 	return
 }
-
 
 // Helper functions
 func extractRequestBody(req *http.Request) []byte {
