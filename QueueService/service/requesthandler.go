@@ -42,21 +42,21 @@ func (r *RequestHandler) AddTask(_ http.ResponseWriter, _ *http.Request) {
 
 }
 
-//
-func (r *RequestHandler) ConsumeTask(_ http.ResponseWriter, _ *http.Request) v1.Task {
+// Function called when a task is consumed by the consumer
+func (r *RequestHandler) ConsumeTask(_ http.ResponseWriter, _ *http.Request) http.Response {
   task := r.Queue.Dequeue()
-	return v1.Task
+	// return a HTTP response with the task marshalled in the body
 }
 
 
-// Function to capture the task-requests into circular queue
+// Function to check for available tasks in circular queue
 func (r *RequestHandler) CheckQueueStatus(_ http.ResponseWriter, _ *http.Request) {
 	// Check if rear != front to conclude that a task exists in queue
 	return
 
 }
 
-// Function to capture the task-requests into circular queue
+// Function to capture the task-consumption acknowledgments
 func (r *RequestHandler) CheckAckStatus(_ http.ResponseWriter, req *http.Request) {
 	// If requestBody contains Ack true then remove from Queue
   reqBody := extractRequestBody(req)
@@ -65,11 +65,10 @@ func (r *RequestHandler) CheckAckStatus(_ http.ResponseWriter, req *http.Request
 		//log error
 		return
 	}
-
-  if ConsumerResponse.staus {
+  // Release the lock only after a successful status
+  if ConsumerResponse.Status {
     MutexMap[task.taskName].unlock(task.taskName)
   }
-  
 	return
 }
 
