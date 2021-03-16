@@ -3,8 +3,8 @@ import(
 )
 
 type TaskQueue struct {
-	 FrontIndex int 
-	 RearIndex  int
+   FrontIndex int  
+   RearIndex  int
    TaskList   []v1.Task
    MutexMap   map[string]&sync.Mutex{}
 }
