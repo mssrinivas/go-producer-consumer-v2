@@ -15,6 +15,7 @@ func (q *QueueService) Initialize() {
 	http.HandleFunc("/queue/consume", q.Handler.ConsumeTask)
 
 	http.HandleFunc("/queue/status", q.Handler.CheckQueueStatus)
+	http.HandleFunc("/queue/ack", q.Handler.CheckAckStatus)
 }
 
 func (q *QueueService) InitalizeQueueService(_ http.ResponseWriter, _ *http.Request) {
