@@ -9,6 +9,7 @@ type TaskQueue struct {
 	RearIndex  int
 	TaskList   []v1.Task
 	MutexMap   map[string]sync.Mutex
+	IndexMap.  map[string]int
 }
 
 func NewTaskQueue(maxBuffer int) TaskQueue {
