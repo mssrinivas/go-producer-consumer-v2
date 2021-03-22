@@ -1,12 +1,12 @@
 package service
 
 import (
+	v1 "QueueService/contracts"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"time"
 )
 
 type RequestHandler struct {
@@ -14,20 +14,19 @@ type RequestHandler struct {
 	logger *log.Logger
 }
 
-func NewRequestHandler() Collector {
-	taskQueue := NewTaskQueue()
+func NewRequestHandler(maxBuffer int) RequestHandler {
+	taskQueue := NewTaskQueue(maxBuffer)
 	return RequestHandler{
 		Queue: taskQueue,
 	}
 }
 
 // Function to capture the task-requests into circular queue
-func (r *RequestHandler) AddTask(_ http.ResponseWriter, _ *http.Request) {
+func (r *RequestHandler) AddTask(_ http.ResponseWriter, req *http.Request) {
 	task := v1.Task{}
 	requestBody := extractRequestBody(req)
 	err := json.Unmarshal(requestBody, &task)
 	if err != nil {
-		//log error
 		return
 	}
 
@@ -36,40 +35,40 @@ func (r *RequestHandler) AddTask(_ http.ResponseWriter, _ *http.Request) {
 		return
 	}
 
-	r.Queue.Enqueue(task)
-	return
-}
+	r.Queue.Enqueue(&task)
 
-// Function called when a task is consumed by the consumer
-func (r *RequestHandler) ConsumeTask(_ http.ResponseWriter, _ *http.Request) http.Response {
-	// Add code
-	task := r.Queue.Dequeue()
-	// return a HTTP response with the task marshalled in the body
+	return
 }
 
 // Function to check for available tasks in circular queue
-func (r *RequestHandler) CheckQueueStatus(_ http.ResponseWriter, _ *http.Request) {
+func (r *RequestHandler) CheckQueue(resp http.ResponseWriter, _ *http.Request) {
 	// Add code
 	// Check if a task exists in the queue
-	return
-
+	if r.Queue.TaskList[r.Queue.RearIndex] != nil {
+		str := fmt.Sprintf("%v", *r.Queue.TaskList[r.Queue.RearIndex])
+		r.Queue.RearIndex++
+		resp.Write([]byte(str))
+	} else {
+		// if successful then do nothing print success
+		resp.Write(nil)
+	}
 }
 
 // Function to capture the task-consumption acknowledgments
-func (r *RequestHandler) CheckAckStatus(_ http.ResponseWriter, req *http.Request) {
-	// If requestBody contains Ack true then remove from Queue
+func (r *RequestHandler) ReceiveAckStatus(_ http.ResponseWriter, req *http.Request) {
 	reqBody := extractRequestBody(req)
-	err := json.Unmarshal(requestBody, &ConsumerResponse)
+	consumerResponse := v1.ConsumerResponse{}
+	err := json.Unmarshal(reqBody, &consumerResponse)
 	if err != nil {
-		//log error
 		return
 	}
 	// Release the lock only after a successful status
-	if ConsumerResponse.Status {
-		r.Queue.MutexMap[task.taskName].UnLock()
+	if consumerResponse.Status {
+		r.Queue.DeQueue(consumerResponse.TaskName)
 	}
 	return
 }
+
 
 // Helper functions
 func extractRequestBody(req *http.Request) []byte {
@@ -85,4 +84,5 @@ func extractRequestBody(req *http.Request) []byte {
 
 // Function to validate the request from the producer
 func ValidateRequest(task v1.Task) error {
+	return nil
 }
