@@ -7,7 +7,6 @@ import (
 	"net/http"
 )
 
-var ConsumerBuffer chan *v1.Task
 
 type QueueService struct {
 	Router   *mux.Router
@@ -17,7 +16,6 @@ type QueueService struct {
 
 func (q *QueueService) Initialize() {
 	requestCollector := NewRequestHandler(5)
-	ConsumerBuffer = make(chan *v1.Task, 5)
 	http.HandleFunc("/queue/start", q.InitializeQueueService)
 	http.HandleFunc("/queue/stop", q.StopQueue)
 
