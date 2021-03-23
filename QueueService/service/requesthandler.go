@@ -3,21 +3,20 @@ package service
 import (
 	v1 "QueueService/contracts"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 )
 
 type RequestHandler struct {
-	Queue  TaskQueue
+	Queue  *TaskQueue
 	logger *log.Logger
 }
 
 func NewRequestHandler(maxBuffer int) RequestHandler {
 	taskQueue := NewTaskQueue(maxBuffer)
 	return RequestHandler{
-		Queue: taskQueue,
+		Queue: &taskQueue,
 	}
 }
 
@@ -42,12 +41,18 @@ func (r *RequestHandler) AddTask(_ http.ResponseWriter, req *http.Request) {
 
 // Function to check for available tasks in circular queue
 func (r *RequestHandler) CheckQueue(resp http.ResponseWriter, _ *http.Request) {
-	// Add code
 	// Check if a task exists in the queue
-	if r.Queue.TaskList[r.Queue.RearIndex] != nil {
-		str := fmt.Sprintf("%v", *r.Queue.TaskList[r.Queue.RearIndex])
-		r.Queue.RearIndex++
-		resp.Write([]byte(str))
+	peekElement, err := r.Queue.PeekQueue()
+	if err != nil {
+		r.logger.Fatal("Error fetching peek of the queue")
+	}
+	if peekElement != nil {
+		jData, err := json.Marshal(*peekElement)
+		if err != nil {
+			// handle error
+		}
+		resp.Header().Set("Content-Type", "application/json")
+		resp.Write(jData)
 	} else {
 		// if successful then do nothing print success
 		resp.Write(nil)
@@ -68,7 +73,6 @@ func (r *RequestHandler) ReceiveAckStatus(_ http.ResponseWriter, req *http.Reque
 	}
 	return
 }
-
 
 // Helper functions
 func extractRequestBody(req *http.Request) []byte {
