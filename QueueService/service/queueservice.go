@@ -1,12 +1,10 @@
 package service
 
 import (
-	v1 "QueueService/contracts"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 )
-
 
 type QueueService struct {
 	Router   *mux.Router
